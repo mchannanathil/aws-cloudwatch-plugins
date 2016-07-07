@@ -530,3 +530,4 @@ service_perfdata = cloudwatch_svc_perfdata.rstrip!
 puts "#{service_output}|#{service_perfdata}"
 
 exit ret
+
