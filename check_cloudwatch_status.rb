@@ -68,7 +68,7 @@ address = ''
 metric = ''
 metric_type = ''
 stat = 'Average,Maximum,Minimum'
-ret = NAGIOS_CODE_UNKNOWN 
+ret = NAGIOS_CODE_UNKNOWN
 warning_values = []
 critical_values = []
 credential_file = ''
@@ -80,73 +80,73 @@ dimensions = nil
 available = ''
 
 
-  def display_menu
-    puts "Usage: #{$0} [-v] -s <server> -h <host> -c <credentials>"
-    puts "  --help, -h:            This Help"
-    puts "  --verbose, -v:         Enable verbose mode"
-    puts "  --address, -a:         Amazon Instance Address"
-    puts "  --instance_id, -i:     Amazon Instance ID"
-    puts "  --credential_file, -f: Path to a File containing the Amazon EC2 Credentials"
-    puts "  --ec2-metric, -C:      One of Amazon EC2 Metrics"
-    puts "                         (CPUUtilization, NetworkIn, NetworkOut, DiskWriteOps, DiskReadBytes, DiskReadOps, DiskWriteBytes, ...)"
-    puts "  --elb-metric, -L:      One fo Amazon Load Balancing Metrics"
-    puts "                         (Latency, RequestCount, HealthyHostCount, UnHealthyHostCount, ...)"
-    puts "  --rds-metric, -D:      One of Amazon RDS Metrics"
-    puts "                         (CPUUtilization, FreeStorageSpace, DatabaseConnections, ReadIOPS, WriteIOPS, ReadLatency, WriteLatency,"
-    puts "                         ReadThroughput, WriteThroughput, ...)"
-    puts "  --elasticache-metric, -E:      One of Amazon Elasticache Metrics"
-    puts "                         (BytesUsedForCache, CacheHits, Evictions, ...)"
-    puts "  --stat, -S:            Amazon Statistic used for threshold and ranges (Average, Sum, SampleCount, Maximum, Minimum)"
-    exit NAGIOS_CODE_UNKNOWN
-  end
+def display_menu
+  puts "Usage: #{$0} [-v] -s <server> -h <host> -c <credentials>"
+  puts "  --help, -h:            This Help"
+  puts "  --verbose, -v:         Enable verbose mode"
+  puts "  --address, -a:         Amazon Instance Address"
+  puts "  --instance_id, -i:     Amazon Instance ID"
+  puts "  --credential_file, -f: Path to a File containing the Amazon EC2 Credentials"
+  puts "  --ec2-metric, -C:      One of Amazon EC2 Metrics"
+  puts "                         (CPUUtilization, NetworkIn, NetworkOut, DiskWriteOps, DiskReadBytes, DiskReadOps, DiskWriteBytes, ...)"
+  puts "  --elb-metric, -L:      One fo Amazon Load Balancing Metrics"
+  puts "                         (Latency, RequestCount, HealthyHostCount, UnHealthyHostCount, ...)"
+  puts "  --rds-metric, -D:      One of Amazon RDS Metrics"
+  puts "                         (CPUUtilization, FreeStorageSpace, DatabaseConnections, ReadIOPS, WriteIOPS, ReadLatency, WriteLatency,"
+  puts "                         ReadThroughput, WriteThroughput, ...)"
+  puts "  --elasticache-metric, -E:      One of Amazon Elasticache Metrics"
+  puts "                         (BytesUsedForCache, CacheHits, Evictions, ...)"
+  puts "  --stat, -S:            Amazon Statistic used for threshold and ranges (Average, Sum, SampleCount, Maximum, Minimum)"
+  exit NAGIOS_CODE_UNKNOWN
+end
 
-  def set_threshold( arg_str )
-    arg = String.new( arg_str )
-    values = []
-    if (arg =~ /^[0-9]+$/)
-      values[0] = 0
-      values[1] = arg.to_f()
-    elsif (arg =~ /^[0-9]+:$/)
-      values[0] = arg.gsub!( /:/, '' ).to_f()
-      values[1] = (+1.0/0.0)	# +Infinity
-    elsif (arg =~ /^~:[0-9]+$/)
-      arg.gsub!( /~/, '' )
-      values[0] = (-1.0/0.0)	# -Infinity
-      values[1] = arg.gsub!( /:/, '' ).to_f()
-    elsif (arg =~ /^[0-9]+:[0-9]+$/)
-      values_str = arg.split( /:/ )
-      values[0] = values_str[0].to_f()
-      values[1] = values_str[1].to_f()
-    elsif (arg =~ /^@[0-9]+:[0-9]+$/)
-      arg.gsub!( /@/, '' )
-      values_str = arg.split( /:/ )
-      values_str.reverse!()
-      values[0] = values_str[0].to_f()
-      values[1] = values_str[1].to_f()
-    end
-    return values
+def set_threshold( arg_str )
+  arg = String.new( arg_str )
+  values = []
+  if (arg =~ /^[0-9]+$/)
+    values[0] = 0
+    values[1] = arg.to_f()
+  elsif (arg =~ /^[0-9]+:$/)
+    values[0] = arg.gsub!( /:/, '' ).to_f()
+    values[1] = (+1.0/0.0)	# +Infinity
+  elsif (arg =~ /^~:[0-9]+$/)
+    arg.gsub!( /~/, '' )
+    values[0] = (-1.0/0.0)	# -Infinity
+    values[1] = arg.gsub!( /:/, '' ).to_f()
+  elsif (arg =~ /^[0-9]+:[0-9]+$/)
+    values_str = arg.split( /:/ )
+    values[0] = values_str[0].to_f()
+    values[1] = values_str[1].to_f()
+  elsif (arg =~ /^@[0-9]+:[0-9]+$/)
+    arg.gsub!( /@/, '' )
+    values_str = arg.split( /:/ )
+    values_str.reverse!()
+    values[0] = values_str[0].to_f()
+    values[1] = values_str[1].to_f()
   end
+  return values
+end
 
-  def check_threshold( arg_str, warn_values, crit_values )
-    arg_num = arg_str.to_f()
-    if ((crit_values[0]).to_f() < (crit_values[1]).to_f()) &&
+def check_threshold( arg_str, warn_values, crit_values )
+  arg_num = arg_str.to_f()
+  if ((crit_values[0]).to_f() < (crit_values[1]).to_f()) &&
       (arg_num < (crit_values[0]).to_f() || arg_num > (crit_values[1]).to_f())
-      return NAGIOS_CODE_CRITICAL
-    elsif ((crit_values[0]).to_f() > (crit_values[1]).to_f()) &&
+    return NAGIOS_CODE_CRITICAL
+  elsif ((crit_values[0]).to_f() > (crit_values[1]).to_f()) &&
       (arg_num < (crit_values[0]).to_f() && arg_num > (crit_values[1]).to_f())
-      return NAGIOS_CODE_CRITICAL
-    end
-
-    if ((warn_values[0]).to_f() < (warn_values[1]).to_f()) && 
-      (arg_num < (warn_values[0]).to_f() || arg_num > (warn_values[1]).to_f())
-      return NAGIOS_CODE_WARNING
-    elsif ((warn_values[0]).to_f() > (warn_values[1]).to_f()) &&
-      (arg_num < (warn_values[0]).to_f() && arg_num > (warn_values[1]).to_f())
-      return NAGIOS_CODE_WARNING
-    end
-
-    return NAGIOS_CODE_OK
+    return NAGIOS_CODE_CRITICAL
   end
+
+  if ((warn_values[0]).to_f() < (warn_values[1]).to_f()) &&
+      (arg_num < (warn_values[0]).to_f() || arg_num > (warn_values[1]).to_f())
+    return NAGIOS_CODE_WARNING
+  elsif ((warn_values[0]).to_f() > (warn_values[1]).to_f()) &&
+      (arg_num < (warn_values[0]).to_f() && arg_num > (warn_values[1]).to_f())
+    return NAGIOS_CODE_WARNING
+  end
+
+  return NAGIOS_CODE_OK
+end
 
 
 opts = GetoptLong.new
@@ -154,7 +154,7 @@ opts = GetoptLong.new
 
 # add options
 opts.set_options(
-        [ "--help", "-h", GetoptLong::OPTIONAL_ARGUMENT ], \
+    [ "--help", "-h", GetoptLong::OPTIONAL_ARGUMENT ], \
         [ "--verbose", "-v", GetoptLong::OPTIONAL_ARGUMENT ], \
         [ "--address", "-a", GetoptLong::OPTIONAL_ARGUMENT ], \
         [ "--instance_id", "-i", GetoptLong::OPTIONAL_ARGUMENT ], \
@@ -201,9 +201,9 @@ opts.each { |opt, arg|
           ec2_endpoint = "ec2.us-west-2.amazonaws.com"
           rds_endpoint = "rds.us-west-2.amazonaws.com"
           elb_endpoint = "elasticloadbalancing.us-west-2.amazonaws.com"
-          elasticache_endpoint = "elasticache.us-west-1.amazonaws.com"
+          elasticache_endpoint = "elasticache.us-west-2.amazonaws.com"
           cloudwatch_endpoint = "monitoring.us-west-2.amazonaws.com"
-          region = "us-west-2"  
+          region = "us-west-2"
         when /eu-west-1/
           ec2_endpoint = "ec2.eu-west-1.amazonaws.com"
           rds_endpoint = "rds.eu-west-1.amazonaws.com"
@@ -253,7 +253,7 @@ opts.each { |opt, arg|
           elasticache_endpoint = "elasticache.us-east-1.amazonaws.com"
           cloudwatch_endpoint = "monitoring.amazonaws.com"
           region = "us-east-1"
-      end 
+      end
     when '--instance_id'
       instance_id = arg
     when '--credential_file'
@@ -286,7 +286,7 @@ opts.each { |opt, arg|
 
 
 if (metric.empty? || cloudwatch_endpoint.empty? || address.empty?)
-    display_menu
+  display_menu
 end
 
 if namespace.eql?(AWS_NAMESPACE_EC2)
@@ -296,7 +296,7 @@ elsif namespace.eql?(AWS_NAMESPACE_RDS)
 elsif namespace.eql?(AWS_NAMESPACE_ELB)
   dimensions = [{"Name" => "LoadBalancerName", "Value" => instance_id }] # where instance_id = elb name
 elsif namespace.eql?(AWS_NAMESPACE_Elasticache)
-  dimensions = [{"Name" => "Elasticache", "Value" => instance_id }] # where instance_id = elasticache name
+  dimensions = [{"Name" => "CacheClusterId", "Value" => instance_id }] # where instance_id = cluster id
 end
 
 begin
@@ -307,7 +307,7 @@ begin
 
   if use_rsa
     decrypt_key = OpenSSL::PKey::RSA.new(File.read(key_file))
-  
+
     access_key_id = decrypt_key.private_decrypt(Base64.decode64(encrypted_access_key_id))
     secret_access_key = decrypt_key.private_decrypt(Base64.decode64(encrypted_secret_access_key))
   else
@@ -331,7 +331,7 @@ end
 
 if verbose == 1
   puts "** Launching AWS status retrieval on instance ID: #{instance_id}"
-  puts "Amazon AWS Endpoint: EC2 #{ec2_endpoint}, RDS #{rds_endpoint}, ELB #{elb_endpoint}, Elasticache #{elasticache_endpoint}"
+  puts "Amazon AWS Endpoint: EC2 #{ec2_endpoint}, RDS #{rds_endpoint}, ELB #{elb_endpoint}"
   puts "Amazon CloudWatch Endpoint: #{cloudwatch_endpoint}"
   puts "Warning values: #{warning_values.inspect}"
   puts "Critical values: #{critical_values.inspect}"
@@ -378,7 +378,7 @@ begin
     #RDS
     instance = aws_api.describe_db_instances(instance_id).data[:body]
     if instance['DescribeDBInstancesResult']['DBInstances'].nil? || instance['DescribeDBInstancesResult']['DBInstances'].empty?
-      puts "Error occured while retrieving RDS instance: no instance found for ID #{instance_id}" 
+      puts "Error occured while retrieving RDS instance: no instance found for ID #{instance_id}"
     else
       status = instance['DescribeDBInstancesResult']['DBInstances'][0]['DBInstanceStatus']
       available = instance['DescribeDBInstancesResult']['DBInstances'][0]['AllocatedStorage'].to_f * 1024 * 1024 * 1024
@@ -404,16 +404,15 @@ begin
   elsif namespace.eql?(AWS_NAMESPACE_Elasticache)
     #Elasticache
     instance = aws_api.describe_cache_clusters(instance_id).data[:body]
-    if instance['DescribeCacheClustersResult']['CacheClusters'].nil? || instance['DescribeCacheClustersResult']['CacheClusters'].empty?
-      puts "Error occured while retrieving Elasticache: no Elasticache found for ID #{instance_id}"
-      #exit NAGIOS_CODE_CRITICAL
+    puts "#{instance}"
+    if instance['CacheClusters'].nil? || instance['CacheClusters'].empty?
+      puts "Error occured while retrieving Elasticache instance: no instance found for ID #{instance_id}"
     else
-      instances = instance['DescribeLoadBalancersResult']['CacheClusters'][0]['NumCacheNodes']
-      if !instances.nil? && !instances.empty?
+      status = instance['CacheClusters'][0]['CacheClusterStatus']
+      puts "#{status}"
+      if status.eql?("available")
         state_name = EC2_STATUS_NAME_RUNNING
       end
-      #cloudwatch_enabled = EC2_STATE_ENABLED
-      cloudwatch_enabled = EC2_STATE_DISABLING ## disabling
     end
   end
 rescue Exception => e
@@ -430,7 +429,7 @@ if verbose == 1
   elsif namespace.eql?(AWS_NAMESPACE_ELB)
     puts "AWS ELB Instance:"
   elsif namespace.eql?(AWS_NAMESPACE_Elasticache)
-    puts "AWS Elasticache Instance:"    
+    puts "AWS Elasticache Instance:"
   end
   pp instance
 end
@@ -481,14 +480,14 @@ begin
   statistics = stat.split(",")
   time = Time.now()
   cloudwatch_metrics_stats = cloudwatch.get_metric_statistics( #:measure_name => "#{metric}",
-                                                               "Namespace" => namespace,
-                                                               "MetricName" => metric, 
-                                                               "StartTime" => (time - cloudwatch_timer).iso8601,
-                                                               "EndTime" => time.iso8601,
-                                                               "Period" => cloudwatch_period,
-                                                               "Statistics" => statistics,
-                                                               #:custom_unit => 'Percent',
-                                                               "Dimensions" => dimensions ).data[:body]
+      "Namespace" => namespace,
+      "MetricName" => metric,
+      "StartTime" => (time - cloudwatch_timer).iso8601,
+      "EndTime" => time.iso8601,
+      "Period" => cloudwatch_period,
+      "Statistics" => statistics,
+      #:custom_unit => 'Percent',
+      "Dimensions" => dimensions ).data[:body]
 rescue Exception => e
   puts "Error occured while trying to retrieve CloudWatch metrics statistics: " + e
   exit NAGIOS_CODE_CRITICAL
@@ -570,4 +569,3 @@ service_perfdata = cloudwatch_svc_perfdata.rstrip!
 puts "#{service_output}|#{service_perfdata}"
 
 exit ret
-
